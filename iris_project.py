@@ -5,6 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_val_score
+from sklearn.preprocessing import StandardScaler
 
 
 # 1. Iris veri setini yüklüyoruz
@@ -43,11 +45,16 @@ X_train, X_test, y_train, y_test = train_test_split(
     test_size=0.2,
     random_state=42
 )
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
 # Logistic Regression
 logistic_model = LogisticRegression(max_iter=200)
-logistic_model.fit(X_train, y_train)
 
-logistic_tahmin = logistic_model.predict(X_test)
+logistic_model.fit(X_train_scaled, y_train)
+logistic_tahmin = logistic_model.predict(X_test_scaled)
 
 logistic_accuracy = accuracy_score(y_test, logistic_tahmin)
 
@@ -59,6 +66,15 @@ forest_model = RandomForestClassifier(
 )
 
 forest_model.fit(X_train, y_train)
+train_tahmin = forest_model.predict(X_train)
+test_tahmin = forest_model.predict(X_test)
+
+train_accuracy = accuracy_score(y_train, train_tahmin)
+test_accuracy = accuracy_score(y_test, test_tahmin)
+
+print("\n--- Overfitting Kontrolu ---")
+print("Train Accuracy:", train_accuracy)
+print("Test Accuracy:", test_accuracy)
 
 forest_tahmin = forest_model.predict(X_test)
 
@@ -67,6 +83,16 @@ forest_accuracy = accuracy_score(y_test, forest_tahmin)
 
 print("\nLogistic Regression Accuracy:", logistic_accuracy)
 print("Random Forest Accuracy:", forest_accuracy)
+cv_skorlari = cross_val_score(
+    forest_model,
+    X,
+    y,
+    cv=5
+)
+
+print("\n5-Fold Cross Validation Sonuclari:")
+print(cv_skorlari)
+print("Ortalama Accuracy:", cv_skorlari.mean())
 
 # Kontrol edelim
 print("\nTrain veri sayisi:", len(X_train))
